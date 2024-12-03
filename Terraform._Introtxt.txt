@@ -39,6 +39,13 @@ Key Features of Terraform:
    Terraform was previously licensed under the Mozilla Public License v2.0 (MPL 2.0), which is an open-source license. But now terraform is licensed
    under Business Source License[BSL] which is not open-source.
 
+Alternative tools:
+-----------------
+1.Ansible
+2.Pulumi
+3.Saltstack
+4.AWS CloudFormation
+
 Advantages of Terraform:
 ------------------------
 1.Cloud-Agnostic: Write configurations once and deploy them to multiple cloud providers.
