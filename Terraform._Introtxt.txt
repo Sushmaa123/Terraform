@@ -53,4 +53,25 @@ Key Concepts in Terraform:
 3.Variables: Allow parameterization of configurations.
 4.State: Maintains the current state of your infrastructure.
 
+Install Terraform:
+-------------------
+1.go to the below website and select windows amd64 to download:
+-->https://developer.hashicorp.com/terraform/install?product_intent=terraform
+2.After downloading extract the files in your desired location
 
+Setup AWS CLI:
+--------------
+1.Download and run the AWS CLI MSI installer for Windows (64-bit) run the below command in cmd or powershell:
+-->msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
+2.To confirm the installation
+--> aws --version
+3.when you run aws --version it should prompt the below output:
+-->aws-cli/2.19.1 Python/3.11.6 Windows/10 exe/AMD64 prompt/off
+4.Create a IAM user with secret key and access key on AWS
+5.Open git bash and run the below cmd to configure aws locally:
+-->aws configure
+example: aws configure
+         AWS Access Key ID [None]:
+         AWS Secret Access Key [None]:
+         Default region name [None]:
+         Default output format [None]:
