@@ -77,7 +77,6 @@ Allows traffic only on port 22 (used for SSH).
 -->from_port = 30000
    to_port = 32767
    protocol = "tcp"
-
 specifically used for nodeport in Kubernetes
 
 3.Allow All Ports:
