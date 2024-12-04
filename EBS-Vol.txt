@@ -1,0 +1,68 @@
+To Create and Attach an EBS Volume:
+--------------------------------------------------
+provider "aws" {
+  region = "us-east-1" # Replace with your desired region
+}
+
+# Create EBS Volume
+resource "aws_ebs_volume" "example_volume" {
+  availability_zone = "us-east-1a" # Replace with your instance's availability zone
+  size              = 20          # Size in GiB
+  type              = "gp2"       # General Purpose SSD
+  tags = {
+    Name = "example-ebs-volume"
+  }
+}
+
+# Attach EBS Volume to EC2 Instance
+resource "aws_volume_attachment" "example_attachment" {
+  device_name = "/dev/xvdf"       # Replace with your desired device name
+  volume_id   = aws_ebs_volume.example_volume.id
+  instance_id = "i-0abcd1234efgh5678" # Replace with your EC2 instance ID
+}
+
+Terraform Code to Detach and Delete an EBS Volume:
+-------------------------------------------------
+provider "aws" {
+  region = "us-east-1" # Replace with your desired region
+}
+
+# Existing EBS Volume
+resource "aws_ebs_volume" "example_volume" {
+  availability_zone = "us-east-1a" # Replace with your availability zone
+  size              = 20          # Size in GiB
+  type              = "gp2"       # General Purpose SSD
+  tags = {
+    Name = "example-ebs-volume"
+  }
+}
+
+# Detach EBS Volume
+resource "aws_volume_attachment" "example_attachment" {
+  device_name = "/dev/xvdf" # Replace with your volume's device name
+  volume_id   = aws_ebs_volume.example_volume.id
+  instance_id = "i-0abcd1234efgh5678" # Replace with your EC2 instance ID
+
+  force_detach = true  # Force detach even if the volume is in use
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# Delete EBS Volume
+resource "null_resource" "delete_volume_trigger" {
+  triggers = {
+    volume_detached = aws_volume_attachment.example_attachment.id
+  }
+
+  provisioner "local-exec" {
+    command = "echo 'Volume detached, ready to delete'"
+  }
+
+  depends_on = [aws_volume_attachment.example_attachment]
+}
+
+# Remove Volume Attachment and Allow Deletion
+resource "aws_volume_attachment" "detach_volume" {
+  device_name = aws_volume.attach
+}
