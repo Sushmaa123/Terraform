@@ -1,0 +1,211 @@
+to add provider with specific region:
+------------------------------------
+provider "aws" {
+  region     = "us-east-1"  # Specify your AWS region
+  }
+
+
+to create resources on multiple region:
+--------------------------------------
+provider "aws" {
+  region     = "us-east-1"  # Specify your AWS region
+  }
+provider "aws" {
+  alias      = "us-west-2"
+  region     = "us-west-2"
+  
+}
+
+
+to create a basic ec2 instance:
+--------------------------------
+resource "aws_instance" "example_instance" {
+  ami                    = "ami-0c55b159cbfafe1f0"  # Replace with your desired AMI ID
+  instance_type          = "t2.micro" 
+  
+  tags {
+     Name = "ExampleInstance"
+     }
+}
+
+To define the security groups:
+------------------------------
+resource "aws_security_group" "web_sg" {
+  name        = "web-sg"
+  description = "Allow HTTP and HTTPS traffic"
+
+  ingress {
+    description      = "Allow HTTP"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description      = "Allow HTTPS"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description      = "Allow all outbound traffic"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+}
+
+explaination:
+-------------
+ingress: it is used to enable inbound rules
+egress: it is used to enable outbound rules
+from_port: starting range of port
+to_port: ending range of port
+
+examples:
+1.single port range:
+-->from_port = 22
+   to_port = 22
+   protocol = "tcp"
+Allows traffic only on port 22 (used for SSH).
+
+2.port range rule:
+-->from_port = 30000
+   to_port = 32767
+   protocol = "tcp"
+
+specifically used for nodeport in Kubernetes
+
+3.Allow All Ports:
+-->from_port = 0
+   to_port = 0
+   protocol = "-1"  # Indicates all protocols
+This is often used for allowing all traffic when combined with protocol = "-1" (all protocols)./
+
+Define an AWS key pair for SSH access:
+--------------------------------------
+1.Generate a Key Pair
+-->You can create an SSH key pair using tools like ssh-keygen or AWS Management Console.
+   Example (using ssh-keygen in Git Bash, PowerShell, or a similar terminal):
+   cmd: ssh-keygen -t rsa -b 2048 -f "C:\path\to\your\keypair-name"
+
+This will create:
+-----------------
+keypair-name (private key)
+keypair-name.pub (public key)
+
+Attach key pair to an instance:
+-------------------------------
+resource "aws_key_pair" "my_key" {
+  key_name   = "my-keypair"  # Name of the key pair
+  public_key = file("C:/path/to/your/keypair-name.pub")  # Path to your public key
+}
+
+To create multiple instances using variables:
+---------------------------------------------
+1.Create a file named variables.tf to parameterize the configuration
+
+variable "instance_count" {
+  description = "Number of EC2 instances to create"
+  default     = 3
+}
+
+variable "ami_id" {
+  description = "AMI ID for the EC2 instance"
+  default     = "ami-0abcdef1234567890"  # Replace with a valid AMI ID
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  default     = "t2.micro"
+}
+
+variable "key_name" {
+  description = "Key pair name for SSH access"
+  default     = "my-keypair"  # Replace with your key pair name
+}
+
+2.Create a file named main.tf for the resources.
+
+provider "aws" {
+  region = "us-east-1"  # Replace with your AWS region
+}
+
+resource "aws_instance" "my_instances" {
+  count         = var.instance_count  # Creates the number of instances specified
+  ami           = var.ami_id          # AMI ID
+  instance_type = var.instance_type   # EC2 instance type
+  key_name      = var.key_name        # Key pair for SSH
+  
+  tags = {
+    Name = "Instance-${count.index + 1}"  # Assigns a unique name to each instance
+  }
+}
+
+To stop single and multiple instances:
+--------------------------------------
+# Variable to hold instance IDs to stop
+
+variable "instance_ids" {
+  description = "List of EC2 instance IDs to stop"
+  default     = ["i-0abcd1234efgh5678"]  # Replace with your instance IDs
+}
+
+# Null resource to execute stop command
+
+resource "null_resource" "stop_instances" {
+  count = length(var.instance_ids)  # Creates one resource per instance ID
+
+  provisioner "local-exec" {
+    command = "aws ec2 stop-instances --instance-ids ${element(var.instance_ids, count.index)}"
+  }
+}
+
+[OR]
+
+variable "instance_count" {
+  default = 3
+}
+
+locals {
+  instance_ids = [for i in range(var.instance_count) : "Instance-${i + 1}"]
+}
+
+resource "null_resource" "stop_instances" {
+  count = var.instance_count
+
+  provisioner "local-exec" {
+    command = "aws ec2 stop-instances --instance-ids ${local.instance_ids[count.index]}"
+  }
+}
+
+
+To delete instances:
+--------------------
+
+provider "aws" {
+  region = "us-east-1"  # Replace with your AWS region
+}
+
+# Variable to hold instance IDs to delete
+variable "instance_ids_to_delete" {
+  description = "List of EC2 instance IDs to delete"
+  default     = ["i-0abcd1234efgh5678", "i-0wxyz1234mnop5678"]  # Replace with specific instance IDs
+}
+
+# Resource to delete specific instances
+resource "aws_instance" "instances_to_delete" {
+  for_each = toset(var.instance_ids_to_delete)  # Dynamically manage multiple instances by their IDs
+  ami      = "ami-0abcdef1234567890"  # Placeholder, won't be used
+  instance_type = "t2.micro"  # Placeholder, won't be used
+  id       = each.key  # Referencing the instance IDs for deletion
+
+  lifecycle {
+    prevent_destroy = false  # Allow Terraform to delete the resource
+  }
+}
+
