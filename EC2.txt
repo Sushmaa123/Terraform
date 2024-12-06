@@ -214,7 +214,9 @@ resource "aws_instance" "instances_to_delete" {
   for_each = toset(var.instance_ids_to_delete)  # Dynamically manage multiple instances by their IDs
   ami      = "ami-0abcdef1234567890"  # Placeholder, won't be used
   instance_type = "t2.micro"  # Placeholder, won't be used
-  id       = each.key  # Referencing the instance IDs for deletion
+  provisioner "local-exec" {
+    command = "aws ec2 terminate-instances --instance-ids ${each.key}"
+  }
 
   lifecycle {
     prevent_destroy = false  # Allow Terraform to delete the resource
