@@ -38,16 +38,18 @@ resource "aws_ebs_volume" "example_volume" {
 }
 
 # Detach EBS Volume
-resource "aws_volume_attachment" "example_attachment" {
-  device_name = "/dev/xvdf" # Replace with your volume's device name
+# Detach EBS Volume
+resource "aws_volume_attachment" "example_detacht" {
+  device_name = "/dev/xvdbb" # Replace with your volume's device name
   volume_id   = aws_ebs_volume.example_volume.id
-  instance_id = "i-0abcd1234efgh5678" # Replace with your EC2 instance ID
+  instance_id = "i-0e0673e381958a413" # Replace with your EC2 instance ID
 
   force_detach = true  # Force detach even if the volume is in use
   lifecycle {
     prevent_destroy = true
   }
 }
+
 
 # Delete EBS Volume
 resource "null_resource" "delete_volume_trigger" {
