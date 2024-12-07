@@ -39,7 +39,7 @@ resource "aws_ebs_volume" "example_volume" {
 
 # Detach EBS Volume
 # Detach EBS Volume
-resource "aws_volume_attachment" "example_detacht" {
+resource "aws_volume_attachment" "example_detach" {
   device_name = "/dev/xvdbb" # Replace with your volume's device name
   volume_id   = aws_ebs_volume.example_volume.id
   instance_id = "i-0e0673e381958a413" # Replace with your EC2 instance ID
