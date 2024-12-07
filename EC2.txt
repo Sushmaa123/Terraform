@@ -19,15 +19,15 @@ provider "aws" {
 
 to create a basic ec2 instance on us-east-1:
 ------------------------------------------
-resource "aws_instance" "instance-1" {
-  provider               = "aws"
-  ami                    = "ami-0c55b159cbfafe1f0"  # Replace with your desired AMI ID
-  instance_type          = "t2.micro" 
-  
+resource "aws_instance" "example" {
+  ami           = "ami-0453ec754f44f9a4a"  # Replace with your AMI ID
+  instance_type = "t2.micro"              # Replace with your instance type
+  availability_zone = "us-east-1a"        # Specify the AZ
   tags = {
-     Name = "ExampleInstance"
-     }
+    Name = "example-instance"
+  }
 }
+
 
 to create a basic ec2 instance on ap-south-1:
 ------------------------------------------
@@ -126,6 +126,11 @@ variable "instance_count" {
   default     = 3
 }
 
+variable "availability_zone" {
+  description = "to create instance in availability-zone"
+  default     = "us-east-1a"
+}
+
 variable "ami_id" {
   description = "AMI ID for the EC2 instance"
   default     = "ami-0abcdef1234567890"  # Replace with a valid AMI ID
@@ -152,7 +157,7 @@ resource "aws_instance" "my_instances" {
   ami           = var.ami_id          # AMI ID
   instance_type = var.instance_type   # EC2 instance type
   key_name      = var.key_name        # Key pair for SSH
-  
+  availability_zone = var.availability_zone 
   tags = {
     Name = "Instance-${count.index + 1}"  # Assigns a unique name to each instance
   }
