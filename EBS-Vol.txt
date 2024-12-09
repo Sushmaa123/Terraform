@@ -27,29 +27,17 @@ provider "aws" {
   region = "us-east-1" # Replace with your desired region
 }
 
-# Existing EBS Volume
-resource "aws_ebs_volume" "example_volume" {
-  availability_zone = "us-east-1a" # Replace with your availability zone
-  size              = 20          # Size in GiB
-  type              = "gp2"       # General Purpose SSD
-  tags = {
-    Name = "example-ebs-volume"
+# Detach EBS Volume
+resource "null_resource" "detach_volume" {
+  provisioner "local-exec" {
+    command = "aws ec2 detach-volume --volume-id ${var.volume_id}"
+  }
+
+  triggers = {
+    instance_id = var.instance_id
+    volume_id   = var.volume_id
   }
 }
-
-# Detach EBS Volume
-# Detach EBS Volume
-resource "aws_volume_attachment" "example_detach" {
-  device_name = "/dev/xvdbb" # Replace with your volume's device name
-  volume_id   = aws_ebs_volume.example_volume.id
-  instance_id = "i-0e0673e381958a413" # Replace with your EC2 instance ID
-
-  force_detach = true  # Force detach even if the volume is in use
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
 
 # Delete EBS Volume
 resource "null_resource" "delete_volume_trigger" {
