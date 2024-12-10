@@ -20,37 +20,42 @@ resource "aws_s3_bucket" "example_bucket" {
 
 To upload objects inside s3 bucket
 ------------------------------------
-# Use local-exec to run AWS CLI commands for uploading objects
-resource "null_resource" "upload_objects" {
-  # Example: Upload a file named "example.txt" from local machine to S3 bucket
-  provisioner "local-exec" {
-    command = <<EOT
-      aws s3 cp /path/to/local/file/example.txt s3://${aws_s3_bucket.example_bucket.bucket}/example.txt --region ${var.aws_region}
-    EOT
-  }
-
-  # Trigger this provisioner whenever the S3 bucket resource is created or updated
-  triggers = {
-    bucket_id = aws_s3_bucket.example_bucket.id
-  }
+resource "aws_s3_object" "example_object" {
+  bucket = aws_s3_bucket.example_bucket.bucket
+  key    = "example.txt"                  # The key (name) of the object in the bucket
+  source = "./example.txt"     # Path to the file on your local machine
+  acl    = "private"                      # Set ACL for the uploaded object
 }
 
+To upload multiple objects:
+---------------------------
+variable "files" {
+  type = map(string)
+  default = {
+    "file1.txt" = "./file1.txt"
+    "file2.txt" = "./file2.txt"
+  }
+}
+resource "aws_s3_object" "multiple_files" {
+  for_each = var.files
+  bucket = aws_s3_bucket.example_bucket.bucket
+  key    = each.key
+  source = each.value
+  acl    = "private"
+}
+
+ 
 To delete the objects in s3 bucket
 -----------------------------------
-# Use local-exec to run AWS CLI commands for deleting objects
-resource "null_resource" "delete_objects" {
-  # Example: Delete all objects in the S3 bucket
-  provisioner "local-exec" {
-    command = <<EOT
-      aws s3 rm s3://${aws_s3_bucket.example_bucket.bucket} --recursive --region ${var.aws_region}
-    EOT
-  }
+remove or comment out the aws_s3_object resource in your Terraform code
+then run terraform apply
 
-  # Trigger this provisioner whenever the S3 bucket resource is created or updated
-  triggers = {
-    bucket_id = aws_s3_bucket.example_bucket.id
-  }
+to delete multiple objects:
+---------------------------
+variable "files" {
+  default = []
 }
+then run terraform validate and terraform apply
 
 
 
