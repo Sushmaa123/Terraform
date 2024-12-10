@@ -39,10 +39,12 @@ resource "null_resource" "detach_volume" {
 }
 
 
-# Delete EBS Volume
-resource "aws_ebs_volume" "my_volume" {
-  volume_id = var.volume_id
-
+# Delete EBS Volume:
+-------------------
+resource "null_resource" "my_volume" {
+  depends_on = [ var.volume_id ]  
+  
+  
   # Force delete ensures volume deletion even if it's attached
   lifecycle {
     prevent_destroy = false # Allows the volume to be destroyed
