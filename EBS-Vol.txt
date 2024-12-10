@@ -27,7 +27,6 @@ provider "aws" {
   region = "us-east-1" # Replace with your desired region
 }
 
-# Detach EBS Volume
 resource "null_resource" "detach_volume" {
   provisioner "local-exec" {
     command = "aws ec2 detach-volume --volume-id ${var.volume_id}"
@@ -39,20 +38,13 @@ resource "null_resource" "detach_volume" {
   }
 }
 
+
 # Delete EBS Volume
-resource "null_resource" "delete_volume_trigger" {
-  triggers = {
-    volume_detached = aws_volume_attachment.example_attachment.id
+resource "aws_ebs_volume" "my_volume" {
+  volume_id = var.volume_id
+
+  # Force delete ensures volume deletion even if it's attached
+  lifecycle {
+    prevent_destroy = false # Allows the volume to be destroyed
   }
-
-  provisioner "local-exec" {
-    command = "echo 'Volume detached, ready to delete'"
-  }
-
-  depends_on = [aws_volume_attachment.example_attachment]
-}
-
-# Remove Volume Attachment and Allow Deletion
-resource "aws_volume_attachment" "detach_volume" {
-  device_name = aws_volume.attach
 }
