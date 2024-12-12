@@ -118,7 +118,7 @@ resource "aws_s3_bucket_policy" "static_website_policy" {
   })
 }
 
-To upload objects into statis-website bucket:
+To upload objects into static-website bucket:
 ---------------------------------------------
 data "local_file" "web_files" {
   for_each = fileset(var.source_dir, "**")
