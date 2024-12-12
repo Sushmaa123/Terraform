@@ -27,6 +27,7 @@ resource "aws_s3_object" "example_object" {
   acl    = "private"                      # Set ACL for the uploaded object
 }
 
+
 To upload multiple objects:
 ---------------------------
 variable "files" {
@@ -127,3 +128,15 @@ resource "aws_s3_bucket" "rough-buckets" {
   force_destroy = true
 }
 
+To delete the s3 buckets:
+-------------------------
+1.comment the "aws_s3_bucket" resource block
+2.then run terraform apply to delete the buckets
+
+example: 
+#resource "aws_s3_bucket" "rough-buckets" {
+  #count = length(var.s3_bucket_names)
+  #bucket = var.s3_bucket_names[count.index]
+  #acl           = "private"
+  #force_destroy = true
+#}
