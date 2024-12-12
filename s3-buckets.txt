@@ -6,7 +6,6 @@ provider "aws" {
 
 resource "aws_s3_bucket" "example_bucket" {
   bucket = "example-bucket-name"  # Replace with your desired bucket name
-  acl    = "private"              # Access Control List, default is private
   
   versioning {
     enabled = true  # Enable versioning for the bucket
@@ -92,23 +91,31 @@ resource "aws_s3_bucket_object" "index_html" {
 
 To create bucket policy for s3 static web hosting
 -----------------------------------------------------
-resource "aws_s3_bucket_policy" "static_website_policy" {
-  bucket = aws_s3_bucket.static_website.bucket
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicReadGetObject",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::${aws_s3_bucket.static_website.bucket}/*"
-    }
-  ]
+# # Allow public access by modifying Block Public Access settings
+resource "aws_s3_bucket_public_access_block" "static_website" {
+  bucket                  = var.bucket_name
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
-EOF
+
+# Attach a bucket policy to allow public read access
+resource "aws_s3_bucket_policy" "static_website_policy" {
+  bucket = var.bucket_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "arn:aws:s3:::${var.bucket_name}/*"
+      }
+    ]
+  })
 }
 
 
