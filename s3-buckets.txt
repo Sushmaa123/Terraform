@@ -131,6 +131,17 @@ resource "aws_s3_object" "web_app_files" {
   bucket     = var.bucket_name
   key        = each.key
   source     = data.local_file.web_files[each.key].filename
+  content_type = lookup(
+    {
+      "html" = "text/html"
+      "css"  = "text/css"
+      "js"   = "application/javascript"
+      "png"  = "image/png"
+      "jpg"  = "image/jpeg"
+    },
+    split(".", each.value)[length(split(".", each.value)) - 1],
+    "application/octet-stream"
+  ) # Auto-detect MIME type
 }
 
 TO create multiple s3 buckets
