@@ -1,5 +1,5 @@
-To create a VPC with two subnets[public and private]
---------------------------------------------------------
+To create a VPC: 
+---------------
 
 provider "aws" {
   region = "us-east-1"  # Replace with your desired AWS region
@@ -13,10 +13,13 @@ resource "aws_vpc" "my_vpc" {
   }
 }
 
+To create a public and private subnets:
+---------------------------------------
 resource "aws_subnet" "public-subnet" {
-  vpc_id     = aws_vpc.my_vpc.id
+  vpc_id     = var.vpc_id
   cidr_block = "192.168.12.0/25"
   availability_zone = "us-east-1a"
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "public-subnet"
@@ -24,7 +27,7 @@ resource "aws_subnet" "public-subnet" {
 }
 
 resource "aws_subnet" "private-subnet" {
-  vpc_id     = aws_vpc.my_vpc.id
+  vpc_id     = var.vpc_id
   cidr_block = "192.168.12.128/25"
   availability_zone = "us-east-1b"
 
@@ -33,48 +36,54 @@ resource "aws_subnet" "private-subnet" {
   }
 }
 
+
 To create a internet gateway
 ----------------------------------
 
 resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.my_vpc.id
-
+  vpc_id = var.vpc_id
   tags = {
-    Name = "MyVPC-GW"
+    Name = "MyVPC-IGW"
   }
 }
 
-To create a public route table and attach public subnet to it
--------------------------------------------------------
+To create a public route table and attach public subnet to it:
+-------------------------------------------------------------
 
 resource "aws_route_table" "public_route_table" {
-  vpc_id = aws_vpc.my_vpc.id
+  vpc_id = var.vpc_id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.gw.id
+    gateway_id = var.gateway_id
   }
-
   tags = {
-    Name = "Public Route Table"
+    Name = "Public-RT"
   }
+}  
+
+To associate public subnet to the public route table:
+------------------------------------------------------
+resource "aws_route_table_association" "public-subnet_association" {
+  subnet_id      = var.public_subnet_id
+  route_table_id = var.public_route_table_id
 }
 
-resource "aws_route_table_association" "public-subnet_association" {
-  subnet_id      = aws_subnet.public-subnet.id
-  route_table_id = aws_route_table.public_route_table.id
-}
 
 To create a NAT gateway in public-subnet and attach it to private route-table.
 ------------------------------------------------------------------------------
 
 resource "aws_eip" "nat_eip" {
   vpc      = true
+
+  tags = {
+    Name = "nat_eip"
+  }
 }
 
 resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = aws_eip.nat_eip.id
-  subnet_id     = aws_subnet.public-subnet.id  # Choose a public subnet for NAT gateway
+  allocation_id = var.allocation_id
+  subnet_id     = var.public_subnet_id  # Choose a public subnet for NAT gateway
 
   tags = {
     Name = "MyNATGateway"
@@ -82,20 +91,61 @@ resource "aws_nat_gateway" "nat_gateway" {
 }
 
 resource "aws_route_table" "private_route_table" {
-  vpc_id = aws_vpc.my_vpc.id
+  vpc_id = var.vpc_id
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+    nat_gateway_id = var.nat_gateway_id
   }
-
   tags = {
-    Name = "Private Route Table"
+    Name = "Private-RT"
   }
 }
 
 resource "aws_route_table_association" "subnet2_association" {
-  subnet_id      = aws_subnet.private-subnet.id
-  route_table_id = aws_route_table.private_route_table.id
+  subnet_id      = var.private_subnet_id
+  route_table_id = var.private_route_table_id
+}
+
+Variables file to setup vpc:
+----------------------------
+variable "vpc_id" {
+  description = "id for vpc"
+  default = "vpc-00540f423533c006b"
+}
+
+variable "gateway_id" {
+  description = "internet gateway id"
+  default = "igw-091dd6990a6e39d7a"
+}
+
+variable "public_subnet_id" {
+  description = "id for public subnet"
+  default = "subnet-04663668fcef73114"
+}
+
+variable "private_subnet_id" {
+  description = "id for public subnet"
+  default = "subnet-07814e17ed2cb99a4"
+}
+
+variable "public_route_table_id" {
+  description = "id for public rt"
+  default = "rtb-05f41c8978fefc0b3"
+}
+
+variable "allocation_id" {
+  description = "id for natgateway"
+  default = "eipalloc-0282fec39c63ac344"
+}
+
+variable "nat_gateway_id" {
+  description = "id for nat gateway"
+  default = "nat-03d0d1bb0dedfee6b"
+}
+
+variable "private_route_table_id" {
+  description = "id for private rt"
+  default = "rtb-0f69d12e5e58c1c50"
 }
 
