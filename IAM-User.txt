@@ -1,1 +1,23 @@
+provider "aws" {
+  region = "us-east-1"
+}
+
+# Define a variable for IAM user names
+variable "iam_user_names" {
+  type    = list(string)
+  default = ["user1", "user2"]
+}
+
+# IAM Users creation
+resource "aws_iam_user" "users" {
+  for_each = toset(var.iam_user_names)
+  name     = each.key
+}
+
+# IAM Policy Attachment
+resource "aws_iam_user_policy_attachment" "policy_attachment" {
+  for_each       = toset(var.iam_user_names)
+  user           = aws_iam_user.users[each.key].name
+  policy_arn     = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess" # Example policy ARN
+}
 
