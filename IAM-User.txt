@@ -20,4 +20,3 @@ resource "aws_iam_user_policy_attachment" "policy_attachment" {
   user           = aws_iam_user.users[each.key].name
   policy_arn     = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess" # Example policy ARN
 }
-
