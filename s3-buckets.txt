@@ -118,12 +118,6 @@ resource "aws_s3_bucket_policy" "static_website_policy" {
   })
 }
 
-To upload objects into static-website bucket:
----------------------------------------------
-data "local_file" "web_files" {
-  for_each = fileset(var.source_dir, "**")
-  filename = "${var.source_dir}/${each.value}"
-}
 
 
 TO create multiple s3 buckets
