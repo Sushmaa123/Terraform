@@ -118,7 +118,23 @@ resource "aws_s3_bucket_policy" "static_website_policy" {
   })
 }
 
+To upload multiple objects in static-website bucket
+---------------------------------------------------
+resource "aws_s3_object" "website_files" {
+  for_each = fileset("C:/Users/QSP-Corp2/Downloads/2137_barista_cafe/2137_barista_cafe/", "**")
 
+  bucket      = aws_s3_bucket.static-bucket.id
+  key         = each.value
+  source      = "C:/Users/QSP-Corp2/Downloads/2137_barista_cafe/2137_barista_cafe/${each.value}"
+
+  content_type = lookup({
+    html = "text/html"
+    css  = "text/css"
+    js   = "application/javascript"
+    png  = "image/png"
+    jpg  = "image/jpeg"
+  }, try(lower(regex("\\.([^.]+)$", each.value)), "unknown"), "application/octet-stream")
+}
 
 TO create multiple s3 buckets
 -------------------------------
