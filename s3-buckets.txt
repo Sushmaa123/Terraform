@@ -67,8 +67,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "static_website" {
-  bucket = "example-static-website-bucket"  # Replace with your desired bucket name
-  acl    = "public-read"                    # Set ACL to allow public read access
+  bucket = "example-static-website-bucket"  # Replace with your desired bucket name                 
 
   website {
     index_document = "index.html"           # Specify the index document for the website
