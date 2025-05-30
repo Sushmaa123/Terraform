@@ -190,12 +190,11 @@ variable "instance_count" {
 }
 
 locals {
-  instance_ids = [for i in range(var.instance_count) : "Instance-${i + 1}"]
+  instance_ids = [for i in aws_instance.inst : i.id]
 }
 
-resource "null_resource" "stop_instances" {
+resource "null_resource" "stop_instance" {
   count = var.instance_count
-
   provisioner "local-exec" {
     command = "aws ec2 stop-instances --instance-ids ${local.instance_ids[count.index]}"
   }
